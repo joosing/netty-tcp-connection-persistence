@@ -13,15 +13,16 @@ import lombok.extern.slf4j.Slf4j;
 public class ExecuteUntilSuccess {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final CountDownLatch cancel = new CountDownLatch(1);
-    private static final int retryInterval = 10;
     private Future<Boolean> future;
+    private long intervalMillis;
 
-    public Future<Boolean> begin(Supplier<Boolean> tryExecute, long timeout) {
+    public Future<Boolean> begin(Supplier<Boolean> tryExecute, long timeoutMillis, long intervalMillis) {
+        this.intervalMillis = intervalMillis;
         future = executor.submit(() -> {
             long runningTime = 0;
 
             // 타임아웃 시간 동안 반복
-            while (runningTime < timeout) {
+            while (runningTime < timeoutMillis) {
 
                 // 성공 시도
                 if (tryExecute.get()) {
@@ -29,12 +30,12 @@ public class ExecuteUntilSuccess {
                 }
 
                 // 취소 요청 대기 = 재시도 간격 대기
-                if (cancel.await(retryInterval, TimeUnit.MILLISECONDS)) {
+                if (cancel.await(intervalMillis, TimeUnit.MILLISECONDS)) {
                     return false;
                 }
 
                 // 시도 시간 누적
-                runningTime += retryInterval;
+                runningTime += intervalMillis;
             }
             return false;
         });
@@ -45,7 +46,7 @@ public class ExecuteUntilSuccess {
     public void stop() {
         cancel.countDown();
         try {
-            future.get(retryInterval * 2, TimeUnit.MILLISECONDS);
+            future.get(intervalMillis * 2, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("stop error", e);
         }
