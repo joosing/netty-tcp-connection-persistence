@@ -7,6 +7,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -14,9 +15,11 @@ public class ExecuteUntilSuccess {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final CountDownLatch cancel = new CountDownLatch(1);
     private Future<Boolean> future;
-    private long intervalMillis;
+    @Getter private long intervalMillis;
+    @Getter private long timeoutMillis;
 
     public Future<Boolean> begin(Supplier<Boolean> tryExecute, long timeoutMillis, long intervalMillis) {
+        this.timeoutMillis = timeoutMillis;
         this.intervalMillis = intervalMillis;
         future = executor.submit(() -> {
             long runningTime = 0;
