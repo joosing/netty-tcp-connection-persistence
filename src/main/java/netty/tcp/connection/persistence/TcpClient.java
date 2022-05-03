@@ -34,8 +34,24 @@ public class TcpClient implements PropertyChangeListener {
         return bootstrap.config().group().shutdownGracefully();
     }
 
-    public ChannelFuture connectOnce(String ip, int port) {
-        return bootstrap.connect(ip, port);
+    public boolean connectOnce(String ip, int port) throws InterruptedException, ExecutionException {
+        persistence = true;
+        return connectOnce0(ip, port);
+    }
+
+    /**
+     * 연결을 시도하고 결과를 기다린 후 반환합니다.
+     * 연결 성공 시, 채널 파이프라인 맨 앞에 연결 상태를 모니터링할 수 있는 ChannelConnectionObservable 핸들러를 추가합니다.
+     * @return 연결 시도 결과
+     */
+    private boolean connectOnce0(String ip, int port) throws InterruptedException, ExecutionException {
+        final ChannelFuture future = bootstrap.connect(ip, port);
+        future.get();
+        if (future.isSuccess()) {
+            channel = future.channel();
+            channel.pipeline().addFirst(new ChannelConnectionObservable(this));
+        }
+        return future.isSuccess();
     }
 
     /**
@@ -48,18 +64,11 @@ public class TcpClient implements PropertyChangeListener {
         persistence = true;
 
         return executeUntilSuccess.begin(() -> {
-            final ChannelFuture future = bootstrap.connect(ip, port);
             try {
-                future.get();
-                if (future.isSuccess()) {
-                    channel = future.channel();
-                }
-            } catch (InterruptedException e) {
-                log.error("interrupted", e);
-            } catch (ExecutionException e) {
-                log.error("execution exception", e);
+                return connectOnce0(ip, port);
+            } catch (InterruptedException | ExecutionException e) {
+                return false;
             }
-            return future.isSuccess();
         }, timeoutMillis, intervalMills);
     }
 
