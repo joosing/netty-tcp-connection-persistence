@@ -1,6 +1,9 @@
 package netty.tcp.connection.persistence;
 
+import java.util.concurrent.ExecutionException;
+
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -10,24 +13,37 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class TcpServer {
-    private final ServerBootstrap bootstrap = new ServerBootstrap();
-    private final EventLoopGroup listenEventLoopGroup = new NioEventLoopGroup();
-    private final EventLoopGroup serviceEventLoopGroup = new NioEventLoopGroup();
+    private ServerBootstrap bootstrap;
+    private EventLoopGroup listenEventLoopGroup;
+    private EventLoopGroup serviceEventLoopGroup;
+    private ChannelInitializer<SocketChannel> channelInitializer;
 
     public void init(ChannelInitializer<SocketChannel> channelInitializer)
             throws InterruptedException {
+        this.channelInitializer = channelInitializer;
+    }
+
+    public boolean start(String bindIp, int bindPort) throws ExecutionException, InterruptedException {
+        listenEventLoopGroup = new NioEventLoopGroup();
+        serviceEventLoopGroup = new NioEventLoopGroup();
+        bootstrap = new ServerBootstrap();
         bootstrap.group(listenEventLoopGroup, serviceEventLoopGroup)
                  .channel(NioServerSocketChannel.class)
+                 .localAddress(bindIp, bindPort)
                  .childHandler(channelInitializer)
                  .option(ChannelOption.SO_REUSEADDR, true);
+
+        final ChannelFuture future = bootstrap.bind();
+        future.get();
+        return future.isSuccess();
     }
 
-    public ChannelFuture start(String bindIp, int bindPort) {
-        return bootstrap.bind(bindIp, bindPort);
-    }
-
-    public void shutdown() {
-        listenEventLoopGroup.shutdownGracefully();
-        serviceEventLoopGroup.shutdownGracefully();
+    public void shutdown() throws InterruptedException {
+        if (listenEventLoopGroup != null) {
+            listenEventLoopGroup.shutdownGracefully().sync();
+        }
+        if (serviceEventLoopGroup != null) {
+            serviceEventLoopGroup.shutdownGracefully().sync();
+        }
     }
 }
