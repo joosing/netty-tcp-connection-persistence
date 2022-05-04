@@ -1,6 +1,3 @@
-# netty-tcp-connection-persistence
-
-
 # 왜 필요한가?
 
 TCP 클라이언트 파트를 구현하며 아래의 요구들을 신경쓰지 않아도 되는 서비스가 필요했습니다.
