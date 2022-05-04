@@ -17,7 +17,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import lombok.SneakyThrows;
 
 public class TcpConnectionPersistenceTest {
     final TcpClient client = new TcpClient();
@@ -48,14 +47,12 @@ public class TcpConnectionPersistenceTest {
     }
 
     @AfterEach
-    @SneakyThrows
-    void afterEach() {
+    void afterEach() throws InterruptedException {
         client.disconnect();
         server.shutdown();
     }
 
     @Test
-    @SneakyThrows
     void tryPersistenceConnection_beforeServerStart() throws Exception {
         // Given : 서버 시작 전, 지속 연결을 시도하는 클라이언트
         final Future<Boolean> connectionFuture = client.connectUntilSuccess("127.0.0.1", 12345, Integer.MAX_VALUE, 100);
@@ -71,8 +68,7 @@ public class TcpConnectionPersistenceTest {
     }
 
     @Test
-    @SneakyThrows
-    void serverRestart_inPersistenceConnection() throws InterruptedException {
+    void serverRestart_inPersistenceConnection() throws Exception {
         // Given : 서버-클라이언트 연결 상태
         server.start("0.0.0.0", 12345);
         final Future<Boolean> connectionFuture = client.connectUntilSuccess("127.0.0.1", 12345, Integer.MAX_VALUE, 100);
