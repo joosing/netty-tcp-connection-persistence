@@ -1,4 +1,4 @@
-package netty.tcp.connection.persistence;
+package netty.tcp.connection.persistence.handler;
 
 import java.util.concurrent.BlockingQueue;
 

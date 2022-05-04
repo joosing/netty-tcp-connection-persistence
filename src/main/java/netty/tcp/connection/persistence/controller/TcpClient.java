@@ -1,8 +1,7 @@
-package netty.tcp.connection.persistence;
+package netty.tcp.connection.persistence.controller;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -15,6 +14,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+import netty.tcp.connection.persistence.handler.ChannelConnectionObservable;
 import netty.tcp.connection.persistence.util.ExecuteUntilSuccess;
 
 @Slf4j

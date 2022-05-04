@@ -1,4 +1,4 @@
-package netty.tcp.connection.persistence;
+package netty.tcp.connection.persistence.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

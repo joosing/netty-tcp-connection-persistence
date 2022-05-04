@@ -16,6 +16,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import netty.tcp.connection.persistence.controller.TcpClient;
+import netty.tcp.connection.persistence.controller.TcpServer;
+import netty.tcp.connection.persistence.handler.EchoHandler;
+import netty.tcp.connection.persistence.handler.ForwardHandler;
 
 public class TcpConnectionPersistenceTest {
     final TcpClient client = new TcpClient();

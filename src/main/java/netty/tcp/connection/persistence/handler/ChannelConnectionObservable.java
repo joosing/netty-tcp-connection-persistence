@@ -1,4 +1,4 @@
-package netty.tcp.connection.persistence;
+package netty.tcp.connection.persistence.handler;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
