@@ -18,7 +18,7 @@ public class ExecuteUntilSuccess {
     @Getter private long intervalMillis;
     @Getter private long timeoutMillis;
 
-    public Future<Boolean> begin(Supplier<Boolean> tryExecute, long timeoutMillis, long intervalMillis) {
+    public Future<Boolean> begin(Supplier<Boolean> tryAction, long timeoutMillis, long intervalMillis) {
         this.timeoutMillis = timeoutMillis;
         this.intervalMillis = intervalMillis;
         future = executor.submit(() -> {
@@ -28,7 +28,7 @@ public class ExecuteUntilSuccess {
             while (runningTime < timeoutMillis) {
 
                 // 성공 시도
-                if (tryExecute.get()) {
+                if (tryAction.get()) {
                     return true;
                 }
 
