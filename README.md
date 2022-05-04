@@ -2,12 +2,12 @@
 
 Netty 프레임워크 기반 TCP 클라이언트 파트를 구현하며 아래의 요구들을 신경쓰지 않아도 되는 서비스가 필요했습니다.
 - 서버가 죽었다가 살아나면 자동으로 연결이 재수립되면 좋겠다.
-- 서버가 시작되기 전이라도 연결 요청하면 언젠가 서가 시작될 때 연결이 수립되면 좋겠다.
+- 서버가 시작되기 전이라도 연결 요청하면 언젠가 서버가 시작될 때 연결이 수립되면 좋겠다.
 
 # 기능구성
 크게 구현 파트는 3부분으로 나눌 수 있습니다.
 ## 01. ExecuteUntilSuccess
-특정 Action 이 성공할 떄 까지 재시도하는 기능을 제공합니다.
+특정 Action 이 성공할 때 까지 재시도하는 기능을 제공합니다.
 ```java
 public class ExecuteUntilSuccess {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -170,46 +170,46 @@ public class TcpClient implements PropertyChangeListener {
 ## 01. 서버 시작 전, 연결 시도
 서버가 시작되기 전에 지속 연결을 요청합니다. 이후 서버가 시작되면 즉시 연결 수립됨을 확인합니다.
 ```java
-    @Test
-    void tryPersistenceConnection_beforeServerStart() throws Exception {
-        // Given : 서버 시작 전, 지속 연결을 시도하는 클라이언트
-        final Future<Boolean> connectionFuture = client.connectUntilSuccess("127.0.0.1", 12345, Integer.MAX_VALUE, 100);
+@Test
+void tryPersistenceConnection_beforeServerStart() throws Exception {
+    // Given : 서버 시작 전, 지속 연결을 시도하는 클라이언트
+    final Future<Boolean> connectionFuture = client.connectUntilSuccess("127.0.0.1", 12345, Integer.MAX_VALUE, 100);
 
-        // When : 2초 뒤 서버 시작
-        Assertions.assertThatExceptionOfType(TimeoutException.class).isThrownBy(() -> connectionFuture.get(2000, TimeUnit.MILLISECONDS));
-        server.start("0.0.0.0", 12345);
+    // When : 2초 뒤 서버 시작
+    Assertions.assertThatExceptionOfType(TimeoutException.class).isThrownBy(() -> connectionFuture.get(2000, TimeUnit.MILLISECONDS));
+    server.start("0.0.0.0", 12345);
 
-        // Then : 서버 시작 즉시 연결 수립
-        Assertions.assertThat(connectionFuture.get()).isTrue();
-        client.send("command");
-        Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
-    }
+    // Then : 서버 시작 즉시 연결 수립
+    Assertions.assertThat(connectionFuture.get()).isTrue();
+    client.send("command");
+    Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
+}
 ```
 
 ## 02. 연결 상태에서 서버 재기동
 서버-클라이언트 연결이 수립된 이후에 서버를 내립니다. 일정 시간 대기 후 서버를 재시작하면 즉시 연결이 재수립됨을 확인합니다.
 ```java
-    @Test
-    void serverRestart_inPersistenceConnection() throws Exception {
-        // Given : 서버-클라이언트 연결 상태
-        server.start("0.0.0.0", 12345);
-        final Future<Boolean> connectionFuture = client.connectUntilSuccess("127.0.0.1", 12345, Integer.MAX_VALUE, 100);
-        Assertions.assertThatNoException().isThrownBy(() -> {
-            final Boolean result = connectionFuture.get(1000, TimeUnit.MILLISECONDS);
-            Assertions.assertThat(result).isTrue();
-        });
+@Test
+void serverRestart_inPersistenceConnection() throws Exception {
+    // Given : 서버-클라이언트 연결 상태
+    server.start("0.0.0.0", 12345);
+    final Future<Boolean> connectionFuture = client.connectUntilSuccess("127.0.0.1", 12345, Integer.MAX_VALUE, 100);
+    Assertions.assertThatNoException().isThrownBy(() -> {
+        final Boolean result = connectionFuture.get(1000, TimeUnit.MILLISECONDS);
+        Assertions.assertThat(result).isTrue();
+    });
 
-        // When : 서버 내린 후, 2초 후 재기동
-        server.shutdown();
-        client.send("command");
-        Assertions.assertThat(responseQueue.poll(2000, TimeUnit.MILLISECONDS)).isNull();
-        server.start("0.0.0.0", 12345);
+    // When : 서버 내린 후, 2초 후 재기동
+    server.shutdown();
+    client.send("command");
+    Assertions.assertThat(responseQueue.poll(2000, TimeUnit.MILLISECONDS)).isNull();
+    server.start("0.0.0.0", 12345);
 
-        // Then : 서버 재기동 후 즉시 자동 재연결
-        Thread.sleep(1000);
-        client.send("command");
-        Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
-    }
+    // Then : 서버 재기동 후 즉시 자동 재연결
+    Thread.sleep(1000);
+    client.send("command");
+    Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
+}
 ```
 
 # Github
