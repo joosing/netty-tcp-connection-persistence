@@ -83,7 +83,7 @@ public class ChannelConnectionObservable extends ChannelInboundHandlerAdapter {
 ```
 
 ## 03. TcpClient
-ExecuteUntilSuccess 모듈에게 TCP 연결을 성공할 때 까지 재시도 하도록 요청하고 `ChannelConnectionObservable` 로부터 연결해제 이벤트 알림받아 연결 재시도를 수행합니다.
+`ExecuteUntilSuccess` 모듈에게 TCP 연결을 성공할 때 까지 재시도 하도록 요청하고 `ChannelConnectionObservable` 로부터 연결해제 이벤트 알림받아 연결 재시도를 수행합니다.
 ```java
 public class TcpClient implements PropertyChangeListener {
     private final Bootstrap bootstrap = new Bootstrap();
