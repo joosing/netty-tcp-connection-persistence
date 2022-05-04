@@ -186,7 +186,7 @@ void tryPersistenceConnection_beforeServerStart() throws Exception {
 }
 ```
 
-## 02. 연결 상태에서 서버 재기동
+## 02. 연결 상태에서 서버 종료 후 재시작
 서버-클라이언트 연결이 수립된 이후에 서버를 내립니다. 일정 시간 대기 후 서버를 재시작하면 즉시 연결이 재수립됨을 확인합니다.
 ```java
 @Test
