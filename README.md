@@ -1,12 +1,13 @@
 # netty-tcp-connection-persistence
 
+
 # 왜 필요한가?
 
 TCP 클라이언트 파트를 구현하며 아래의 요구들을 신경쓰지 않아도 되는 서비스가 필요했습니다.
-- TCP 서버가 재시작되면 자동으로 그리고 실시간으로 연결이 재수립되면 좋겠다.
-- TCP 서버가 시작되기 전이라도 연결하라고 요청하면 언젠가 서비가 시작되면 연결이 자동으로 그리소 실시간으로 수립되면 좋겠다.
+- TCP 서버가 종료되었다가 재시작되면 자동으로 연결이 재수립되면 좋겠다.
+- TCP 서버가 시작되기 전이라도 연결하라고 요청하면 언젠가 서비가 시작되면 연결이 자동으로 수립되면 좋겠다.
 
-# 구현
+# 기능구성
 크게 구현 파트는 3부분으로 나눌 수 있습니다.
 ## 01. ExecuteUntilSuccess
 특정 Action 이 성공할 떄 까지 재시도하는 기능을 제공합니다.
@@ -213,3 +214,6 @@ public class TcpClient implements PropertyChangeListener {
         Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
     }
 ```
+
+# Github
+[netty-tcp-connection-persistence](https://github.com/Jsing/netty-tcp-connection-persistence.git)
