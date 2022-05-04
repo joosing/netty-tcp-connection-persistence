@@ -79,7 +79,7 @@ public class TcpConnectionPersistenceTest {
         // When : 서버 내린 후, 2초 후 재기동
         server.shutdown();
         client.send("command");
-        Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isNull();
+        Assertions.assertThat(responseQueue.poll(2000, TimeUnit.MILLISECONDS)).isNull();
         server.start("0.0.0.0", 12345);
 
         // Then : 서버 재기동 후 즉시 자동 재연결
