@@ -1,6 +1,5 @@
 package netty.tcp.connection.persistence;
 
-import java.beans.PropertyChangeListener;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,7 +20,7 @@ import io.netty.handler.codec.string.StringEncoder;
 public class TcpConnectionPersistenceTest {
     final TcpClient client = new TcpClient();
     final TcpServer server = new TcpServer();
-    final BlockingQueue<String> receiveQueue = new LinkedBlockingQueue<>();
+    final BlockingQueue<String> responseQueue = new LinkedBlockingQueue<>();
 
     @BeforeEach
     void beforeEach() throws InterruptedException {
@@ -30,7 +29,7 @@ public class TcpConnectionPersistenceTest {
             protected void initChannel(NioSocketChannel ch) throws Exception {
                 ch.pipeline()
                   .addLast(new StringDecoder())
-                  .addLast(new ForwardHandler(receiveQueue))
+                  .addLast(new ForwardHandler(responseQueue))
                   .addLast(new StringEncoder());
             }
         });
@@ -63,8 +62,8 @@ public class TcpConnectionPersistenceTest {
 
         // Then : 서버 시작 즉시 연결 수립
         Assertions.assertThat(connectionFuture.get()).isTrue();
-        client.send("Hello");
-        Assertions.assertThat(receiveQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
+        client.send("command");
+        Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
     }
 
     @Test
@@ -79,13 +78,13 @@ public class TcpConnectionPersistenceTest {
 
         // When : 서버 내린 후, 2초 후 재기동
         server.shutdown();
-        client.send("Hello");
-        Assertions.assertThat(receiveQueue.poll(1000, TimeUnit.MILLISECONDS)).isNull();
+        client.send("command");
+        Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isNull();
         server.start("0.0.0.0", 12345);
 
         // Then : 서버 재기동 후 즉시 자동 재연결
         Thread.sleep(1000);
-        client.send("Hello");
-        Assertions.assertThat(receiveQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
+        client.send("command");
+        Assertions.assertThat(responseQueue.poll(1000, TimeUnit.MILLISECONDS)).isEqualTo("Hello");
     }
 }
