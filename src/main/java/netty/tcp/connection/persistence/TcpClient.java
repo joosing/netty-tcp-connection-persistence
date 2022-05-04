@@ -31,7 +31,7 @@ public class TcpClient implements PropertyChangeListener {
                  .handler(channelInitializer);
     }
 
-    public Future<?> shutdown() {
+    public Future<?> destroy() {
         return bootstrap.config().group().shutdownGracefully();
     }
 
